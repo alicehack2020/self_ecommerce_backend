@@ -1,4 +1,4 @@
-import EventModel from "../model/Event.js";
+import Product from "../model/Product.js";
 class EventController { 
     
     static addEvent = async (req, res) => { 
@@ -47,6 +47,42 @@ class EventController {
         }
         
     }
+
+
+
+
+    //list products
+    static productList = async (req, res) => { 
+        
+        const list = await Product.find()
+        if (list)
+        {
+            res.send({list}) 
+        }
+        else {
+            res.send({})  
+        }
+        
+    }
+
+
+    //product details
+    static productDetails = async (req, res) => { 
+        const id = req.query.id;
+        console.log("id=======>",id)
+        const data = await Product.find({_id:id})
+        if (data)
+        {
+            res.send({data}) 
+        }
+        else {
+            res.send({})  
+        }
+        
+    }
+
+
+
 }
 
 export default EventController;

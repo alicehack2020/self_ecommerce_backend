@@ -10,7 +10,7 @@ class UserController{
       const user = await UserModel.findOne({ email: email })
       if(user)
       {
-        res.send({"status": "success", "message": "Email Already Used"})}
+        res.send({"status": "failed", "message": "Email Already Used"})}
           else
           {
             try {

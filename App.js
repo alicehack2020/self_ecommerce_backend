@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors"
  
 import userRoutes from "./routes/userRoutes.js"
-import eventRoutes from "./routes/eventRoutes.js"
+import productRoutes from "./routes/productRoutes.js"
  
 import dotenv from "dotenv"
  
@@ -29,9 +29,14 @@ app.use(
 	})
 );
 
+
+//user
 app.use("/auth", userRoutes);
+
+
+
 //events
-app.use('/api/event',eventRoutes)
+ app.use('/api/product',productRoutes)
 
 app.get("/", (req, res) => {
     res.send({message:"Welcome"})

@@ -1,59 +1,13 @@
 import Product from "../model/Product.js";
-class EventController { 
+import CheckoutModel from "../model/Checkout.js";
+class ProductController { 
     
-    static addEvent = async (req, res) => { 
-        
-        try {
-            console.log(req.user)
-            const { _id } = req.user;
-            const {eventName,startdate,enddate,startTime,endTime,location,description,category,bannerImage}=req.body
-           
-            
-            const data = {
-                userId:_id,
-                eventName,
-                startdate,
-                enddate,
-                startTime,
-                endTime,
-                location,
-                description,
-                category,
-                bannerImage,
-            }
-             
-            if (_id)
-            {
-                const doc=new EventModel(data)
-                await doc.save() 
-                res.send({"status":"success","message":"added successfully"})
-            }   
-        } catch (error) {
-            res.status(400).send({"status":"failed","message":"All filds are required"})
-        }
-        
-         
-    }
-
-    static eventList = async (req, res) => { 
-        const { _id } = req.user;
-        const list = await EventModel.find({ userId: _id })
-        if (list)
-        {
-            res.send({list}) 
-        }
-        else {
-            res.send({})  
-        }
-        
-    }
-
+  
 
 
 
     //list products
     static productList = async (req, res) => { 
-        
         const list = await Product.find()
         if (list)
         {
@@ -61,8 +15,7 @@ class EventController {
         }
         else {
             res.send({})  
-        }
-        
+        }  
     }
 
 
@@ -77,12 +30,133 @@ class EventController {
         }
         else {
             res.send({})  
+        }  
+    }
+
+
+    // add checkout
+    static addCheckout = async (req, res) => { 
+
+        const { userId, ProductId } = req.query;
+        console.log(req.query)
+        const list = await CheckoutModel.find({ userid: userId })
+        if (list.length>0)
+        {
+           
+            const data = await CheckoutModel.updateOne(
+                { userid: userId },
+
+                { $push: { lists: ProductId } }
+            );
+            
+            if (data.acknowledged)
+            {
+                res.status(200).json({ message: 'Product added successfully And Updates'});   
+            }
+            else {
+                res.status(200).json({ message: 'Product added successfully And Issue'});   
+            }
+
         }
+
+        else {
+            const data = await CheckoutModel.insertMany({
+                userid:userId,paid:false,list:[ProductId] 
+            })
+            
+            if (data.lenght > 0)
+            {
+                res.status(200).json({ message: 'Product Added successfully'});  
+   
+            }
+            else {
+                res.status(200).json({ message: 'Connot add product'});  
+            }
+        }
+
+
         
     }
+
+     //delete checkout
+     static removeCheckout = async (req, res) => { 
+
+        const { userId, ProductId } = req.query;
+        const list = await CheckoutModel.find({ userid: userId, paid: false })
+         
+         console.log("list===>",list)
+        if (list.length>0)
+        {
+           
+            const data = await CheckoutModel.updateOne(
+                { userid: userId },
+                { $pull: { lists: ProductId } }
+            );
+            console.log("pull data==>",data)
+            const list1 = await CheckoutModel.find({ userid: userId, paid: false })
+
+            console.log("new pull data==>",list1)
+
+            if (data.acknowledged)
+            {
+                res.status(200).json({ message: 'Product Removed successfully And Updates'});   
+            }
+            else {
+                res.status(400).json({ message: 'Product Removed successfully And Issue'});   
+            }
+
+        }
+
+        else {
+            res.status(400).json({ message: 'Something went wrong'});   
+     
+        }
+
+
+        
+    }
+    
+    //get checkout list 
+    static listCheckout = async (req, res) => { 
+        const { userId} = req.query;
+        const list = await CheckoutModel.find({ userid: userId, paid: false })
+        if (list.length>0)
+        {
+
+               
+              const ids = list[0].lists
+              const data = await Product.find({ _id: { $in: ids } });
+            
+              console.log("data===>", data)
+        
+            
+            let Total = 0
+            
+            for (let i = 0; i < data.length; i++)
+            {
+                 
+                Total=Total+(Number(data[i].listPrice))
+            }
+
+           
+            res.status(200).json({
+                message: 'Product Removed successfully And Updates', data: {
+               data,Total
+          }});  
+        }
+        else
+        {
+            res.status(400).json({ message: 'Something went wrong'});   
+        } 
+    }
+
+
+    
+
+    
 
 
 
 }
 
-export default EventController;
+export default ProductController;

@@ -2,11 +2,11 @@ import UserModel from "../model/User.js";
 import Jwt  from "jsonwebtoken";
 class UserController{
    
+
   //register
   static userRegistration = async (req, res) => {
     const { email, fname, lname, password } = req.body;
-
-    try {
+     try {
       const user = await UserModel.findOne({ email: email })
       if(user)
       {
@@ -38,7 +38,8 @@ class UserController{
               res.send({
                 "status": "success", "message": "registration successfully",
                 data,
-                token
+                token,
+                id:user._id
             })
             } catch (error) {
               console.log(error)
@@ -46,6 +47,7 @@ class UserController{
              }
           } 
     } catch (error) {
+      console.log(error)
       res.send({"status":"failed","message":"unable to register"})
     }
     
@@ -56,6 +58,7 @@ class UserController{
   //login
   static userLogin = async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body)
     console.log(email)
     console.log(password)
     try {
@@ -76,8 +79,8 @@ class UserController{
              "status": "success",
              "message": "login successfully",
              data,
-             token
-              
+             token,
+             id:user._id
            })
         }
         else {
@@ -89,6 +92,7 @@ class UserController{
         res.send({"status":"failed","message":"invalid email/password"})
        }
     } catch (error) {
+      console.log(error)
       res.send({"status":"failed","message":"invalid email/password"})
     }
 

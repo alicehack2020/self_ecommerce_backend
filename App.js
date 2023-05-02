@@ -33,13 +33,13 @@ app.use(
 //user
 app.use("/auth", userRoutes);
 
-
-
 //events
  app.use('/api/product',productRoutes)
 
 app.get("/", (req, res) => {
     res.send({message:"Welcome"})
 })
+
+
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Listenting on port ${port}...`));

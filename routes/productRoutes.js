@@ -9,10 +9,12 @@ import checkUserAuth from "../middlewares/auth-middleware.js";
 
 
 //user checkout add,remove,list,update products
-router.post('/addCheckout', checkUserAuth, ProductController.addEvent);
-router.get('/listCheckout',checkUserAuth,ProductController.eventList);
-router.delete('/removeCheckout',checkUserAuth,ProductController.eventList);
-router.put('/updateCheckout',checkUserAuth,ProductController.eventList);
+router.get('/listCheckout',ProductController.listCheckout);
+router.post('/addCheckout', ProductController.addCheckout);
+router.delete('/removeCheckout', ProductController.removeCheckout);
+
+
+// router.put('/updateCheckout',checkUserAuth,ProductController.eventList);
 
 
 

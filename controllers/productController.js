@@ -123,13 +123,9 @@ class ProductController {
         if (list.length>0)
         {
 
-               
-              const ids = list[0].lists
-              const data = await Product.find({ _id: { $in: ids } });
-            
-              console.log("data===>", data)
         
-            
+            const ids = list[0].lists
+            const data = await Product.find({ _id: { $in: ids } });
             let Total = 0
             
             for (let i = 0; i < data.length; i++)
@@ -138,10 +134,10 @@ class ProductController {
                 Total=Total+(Number(data[i].listPrice))
             }
 
-           
+          
             res.status(200).json({
                 message: 'Product Removed successfully And Updates', data: {
-               data,Total
+               data,Total,checkoutId:list[0]._id
           }});  
         }
         else
@@ -149,13 +145,6 @@ class ProductController {
             res.status(400).json({ message: 'Something went wrong'});   
         } 
     }
-
-
-    
-
-    
-
-
 
 }
 

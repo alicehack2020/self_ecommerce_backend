@@ -1,11 +1,6 @@
 import Product from "../model/Product.js";
 import CheckoutModel from "../model/Checkout.js";
 class ProductController { 
-    
-  
-
-
-
     //list products
     static productList = async (req, res) => { 
         const list = await Product.find()
@@ -17,8 +12,6 @@ class ProductController {
             res.send({})  
         }  
     }
-
-
     //product details
     static productDetails = async (req, res) => { 
         const id = req.query.id;
@@ -32,20 +25,16 @@ class ProductController {
             res.send({})  
         }  
     }
-
-
     // add checkout
     static addCheckout = async (req, res) => { 
-        
-
         try {
             const { userId, ProductId } = req.query;
             console.log(req.query)
-            const list = await CheckoutModel.find({ userid: userId })
+            const list = await CheckoutModel.find({ userid: userId,paid: false})
             if (list.length>0)
             {
                //login if product is already added or not
-               const bascketData = await CheckoutModel.find({ userid: userId, lists: ProductId }, { lists: 1 })
+               const bascketData = await CheckoutModel.find({ userid: userId, lists: ProductId,paid: false}, { lists: 1 })
                
                 if (bascketData.length > 0)
                 {
@@ -53,7 +42,7 @@ class ProductController {
                 }
                 else {
                     const data = await CheckoutModel.updateOne(
-                        { userid: userId },
+                        { userid: userId,paid: false},
                         { $push: { lists: ProductId } }
                     );
                     
@@ -101,8 +90,8 @@ class ProductController {
         {
            
             const data = await CheckoutModel.updateOne(
-                { userid: userId },
-                { $pull: { lists: ProductId } }
+                { userid: userId,paid: false},
+                { $pull: { lists: ProductId} }
             );
             console.log("pull data==>",data)
             const list1 = await CheckoutModel.find({ userid: userId, paid: false })

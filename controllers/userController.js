@@ -1,8 +1,6 @@
 import UserModel from "../model/User.js";
 import Jwt  from "jsonwebtoken";
 class UserController{
-   
-
   //register
   static userRegistration = async (req, res) => {
     const { email, fname, lname, password } = req.body;
@@ -53,7 +51,6 @@ class UserController{
     
     
   }
-  
 
   //login
   static userLogin = async (req, res) => {
@@ -99,7 +96,6 @@ class UserController{
   
  }
   
-
 
 }
 

@@ -1,13 +1,12 @@
 
 import express from "express";
 import cors from "cors"
- 
 import userRoutes from "./routes/userRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
- 
+import paymentRoutes from "./routes/paymentRoutes.js"
 import dotenv from "dotenv"
  
- import bodyParser from "body-parser";
+import bodyParser from "body-parser";
 import connectDb from "./config/connectdb.js"
 
 dotenv.config()
@@ -30,11 +29,16 @@ app.use(
 );
 
 
+ 
+
 //user
 app.use("/auth", userRoutes);
 
 //events
- app.use('/api/product',productRoutes)
+app.use('/api/product', productRoutes)
+ 
+//payment 
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
     res.send({message:"Welcome"})

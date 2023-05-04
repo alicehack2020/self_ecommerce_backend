@@ -49,7 +49,7 @@ class ProductController {
                
                 if (bascketData.length > 0)
                 {
-                    res.status(400).json({ message: 'Product added already added'});       
+                    res.status(400).json({ message: 'Product already added'});       
                 }
                 else {
                     const data = await CheckoutModel.updateOne(
@@ -59,10 +59,10 @@ class ProductController {
                     
                     if (data.acknowledged)
                     {
-                        res.status(200).json({ message: 'Product added successfully And Updates'});   
+                        res.status(200).json({ message: 'Product added successfully'});   
                     }
                     else {
-                        res.status(200).json({ message: 'Product added successfully And Issue'});   
+                        res.status(200).json({ message: 'Product added successfully'});   
                     }   
                 }
             }
@@ -111,10 +111,10 @@ class ProductController {
 
             if (data.acknowledged)
             {
-                res.status(200).json({ message: 'Product Removed successfully And Updates'});   
+                res.status(200).json({ message: 'Product Removed successfully '});   
             }
             else {
-                res.status(400).json({ message: 'Product Removed successfully And Issue'});   
+                res.status(400).json({ message: 'Product Removed successfully'});   
             }
 
         }
@@ -153,7 +153,7 @@ class ProductController {
     
               
                 res.status(200).json({
-                    message: 'Product Removed successfully And Updates', data: {
+                    message: 'Product Removed successfully', data: {
                    data,Total,checkoutId:list[0]._id,ItemCount
               }});  
             }

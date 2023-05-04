@@ -36,43 +36,55 @@ class ProductController {
 
     // add checkout
     static addCheckout = async (req, res) => { 
+        
 
-        const { userId, ProductId } = req.query;
-        console.log(req.query)
-        const list = await CheckoutModel.find({ userid: userId })
-        if (list.length>0)
-        {
-           
-            const data = await CheckoutModel.updateOne(
-                { userid: userId },
-
-                { $push: { lists: ProductId } }
-            );
-            
-            if (data.acknowledged)
+        try {
+            const { userId, ProductId } = req.query;
+            console.log(req.query)
+            const list = await CheckoutModel.find({ userid: userId })
+            if (list.length>0)
             {
-                res.status(200).json({ message: 'Product added successfully And Updates'});   
+               //login if product is already added or not
+               const bascketData = await CheckoutModel.find({ userid: userId, lists: ProductId }, { lists: 1 })
+               
+                if (bascketData.length > 0)
+                {
+                    res.status(400).json({ message: 'Product added already added'});       
+                }
+                else {
+                    const data = await CheckoutModel.updateOne(
+                        { userid: userId },
+                        { $push: { lists: ProductId } }
+                    );
+                    
+                    if (data.acknowledged)
+                    {
+                        res.status(200).json({ message: 'Product added successfully And Updates'});   
+                    }
+                    else {
+                        res.status(200).json({ message: 'Product added successfully And Issue'});   
+                    }   
+                }
             }
+    
             else {
-                res.status(200).json({ message: 'Product added successfully And Issue'});   
-            }
-
+                const data = await CheckoutModel.insertMany({
+                    userid:userId,paid:false,list:[ProductId] 
+                })
+                
+                if (data.lenght > 0)
+                {
+                    res.status(200).json({ message: 'Product Added successfully'});  
+       
+                }
+                else {
+                    res.status(200).json({ message: 'Connot add product'});  
+                }
+            }   
+        } catch (error) {
+            res.status(400).json({ message: 'Something went wrong'});  
         }
-
-        else {
-            const data = await CheckoutModel.insertMany({
-                userid:userId,paid:false,list:[ProductId] 
-            })
-            
-            if (data.lenght > 0)
-            {
-                res.status(200).json({ message: 'Product Added successfully'});  
-   
-            }
-            else {
-                res.status(200).json({ message: 'Connot add product'});  
-            }
-        }
+        
 
 
         
@@ -118,32 +130,44 @@ class ProductController {
     
     //get checkout list 
     static listCheckout = async (req, res) => { 
-        const { userId} = req.query;
-        const list = await CheckoutModel.find({ userid: userId, paid: false })
-        if (list.length>0)
-        {
 
-        
-            const ids = list[0].lists
-            const data = await Product.find({ _id: { $in: ids } });
-            let Total = 0
-            
-            for (let i = 0; i < data.length; i++)
+        try {
+            const { userId } = req.query;
+            console.log("userId====>",userId)
+            const list = await CheckoutModel.find({ userid: userId, paid: false })
+            console.log("list====>",list)
+            if (list.length > 0)
             {
-                 
-                Total=Total+(Number(data[i].listPrice))
-            }
+    
+                const ids = list[0].lists
+                const data = await Product.find({ _id: { $in: ids } });
+                let Total = 0
+                let ItemCount=0
+                for (let i = 0; i < data.length; i++)
+                {
+                    ItemCount=ItemCount+1
+                    Total=Total+(Number(data[i].listPrice))
+                }
 
-          
-            res.status(200).json({
-                message: 'Product Removed successfully And Updates', data: {
-               data,Total,checkoutId:list[0]._id
-          }});  
+                
+    
+              
+                res.status(200).json({
+                    message: 'Product Removed successfully And Updates', data: {
+                   data,Total,checkoutId:list[0]._id,ItemCount
+              }});  
+            }
+            else
+            {
+                res.status(200).json({
+                    message: 'No data', data:[]});   
+            }   
+        } catch (error) {
+            console.log(error)
+            res.status(400).json({ message: 'Something went wrong'});      
         }
-        else
-        {
-            res.status(400).json({ message: 'Something went wrong'});   
-        } 
+
+       
     }
 
 }

@@ -3,12 +3,14 @@ import Jwt  from "jsonwebtoken";
 class UserController{
   //register
   static userRegistration = async (req, res) => {
-    const { email, fname, lname, password } = req.body;
+    const { email, fname, lname, password, mobile } = req.body.userInfo;
+    console.log(req.body)
      try {
       const user = await UserModel.findOne({ email: email })
       if(user)
       {
-        res.send({"status": "failed", "message": "Email Already Used"})}
+        res.send({ "status": "failed", "message": "Email Already Used" })
+      }
           else
           {
             try {
@@ -18,7 +20,8 @@ class UserController{
                 fname:fname,
                 lname:lname,
                 email:email,
-                password: password
+                password: password,
+                mobile: mobile
               })
   
               await doc.save()

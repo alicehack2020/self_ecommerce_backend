@@ -10,7 +10,7 @@ class PaymentController {
     static ordersData = async (req, res) => {
         try {
             const { checkoutId } = req.body;
-            // console.log(checkoutId)
+            
             const list = await CheckoutModel.find({ _id: checkoutId })
             if (list.length > 0)
             {
@@ -63,12 +63,11 @@ class PaymentController {
             console.log(req.body)
              
             const list = await CheckoutModel.find({ userid: id,paid: false})
-            console.log("list=======2",list)
-            console.log("list=======2 id",list[0]._id)
+            
             if (list.length > 0)
             {
                 const final = await CheckoutModel.updateOne({ _id: list[0]._id }, { $set: { paid: true }});
-                 console.log("final===>",final)
+                 
                 if (final.acknowledged)
                 {
                     return res.status(200).json({ message: "Payment successfully" });
@@ -96,7 +95,7 @@ class PaymentController {
 
         } catch (error) {
             res.status(500).json({ message: "Internal Server Error!" });
-            console.log(error);
+            
         }
     }
 }

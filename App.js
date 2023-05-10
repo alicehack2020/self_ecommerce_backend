@@ -13,7 +13,8 @@ dotenv.config()
 
 const app = express();
 const database_url=process.env.DATABASE_URL;  
-//database connection
+
+
 connectDb(database_url)
  app.use(bodyParser.json())
   

@@ -15,7 +15,7 @@ class ProductController {
     //product details
     static productDetails = async (req, res) => { 
         const id = req.query.id;
-        console.log("id=======>",id)
+        
         const data = await Product.find({_id:id})
         if (data)
         {
@@ -29,7 +29,7 @@ class ProductController {
     static addCheckout = async (req, res) => { 
         try {
             const { userId, ProductId } = req.query;
-            console.log(req.query)
+            
             const list = await CheckoutModel.find({ userid: userId,paid: false})
             if (list.length>0)
             {
@@ -85,7 +85,7 @@ class ProductController {
         const { userId, ProductId } = req.query;
         const list = await CheckoutModel.find({ userid: userId, paid: false })
          
-         console.log("list===>",list)
+         
         if (list.length>0)
         {
            
@@ -122,9 +122,9 @@ class ProductController {
 
         try {
             const { userId } = req.query;
-            console.log("userId====>",userId)
+           
             const list = await CheckoutModel.find({ userid: userId, paid: false })
-            console.log("list====>",list)
+             
             if (list.length > 0)
             {
     

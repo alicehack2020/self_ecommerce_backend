@@ -2,8 +2,9 @@ import UserModel from "../model/User.js";
 import Jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer';
 import { google } from "googleapis"
+import { sendEmailTemp } from "../helper/Helper.js";
 class UserController{
-  //register
+  //normal register
   static userRegistration = async (req, res) => {
     const { email, fname, lname, password, mobile } = req.body.userInfo;
     console.log(req.body)
@@ -35,9 +36,10 @@ class UserController{
               const token=Jwt.sign(data,
                 process.env.JWT_SECRET_KEY,{expiresIn:"5d"})
              
-             
+              const result=await sendEmailTemp(user.email,token)
+                
               res.send({
-                "status": "success", "message": "registration successfully",
+                "status": "success", "message": "registration successfully,Verification email has been send on your email please check",
                 data,
                 token,
                 id:user._id
@@ -54,8 +56,7 @@ class UserController{
     
     
   }
-
-  //login
+  //normal login
   static userLogin = async (req, res) => {
     const { email, password} = req.body;
     try {
@@ -103,13 +104,15 @@ class UserController{
 
   
   }
-  
-  
+
+  //normal sendEmail
   static sendEmail = async (req, res) => {
     try {
       const { email } = req.body;
       console.log(email)
+     
       const user = await UserModel.findOne({ email: email })
+      
       console.log(user)
       if (user!==null)
       {
@@ -123,47 +126,9 @@ class UserController{
         const token=Jwt.sign(data,
           process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
         
-        
-        
-    
-      const CLIENT_ID = process.env.CLIENT_ID;
-      const CLEINT_SECRET = process.env.CLEINT_SECRET;
-      const REDIRECT_URI = process.env.REDIRECT_URI;
-      const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
-        
-      const oAuth2Client = new google.auth.OAuth2(
-        CLIENT_ID,
-        CLEINT_SECRET,
-        REDIRECT_URI
-      );
-      oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-
-      const accessToken = await oAuth2Client.getAccessToken();
-
-      const transport = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          type: 'OAuth2',
-          user: 'mangeshdev2042@gmail.com',
-          clientId: CLIENT_ID,
-          clientSecret: CLEINT_SECRET,
-          refreshToken: REFRESH_TOKEN,
-          accessToken: accessToken,
-        },
-      });
-  
-      const mailOptions = {
-        from: 'SENDER NAME <mangeshdev2042@gmail.com>',
-        to: email,
-        subject: 'Hello from gmail using API',
-        text: 'Hello from gmail email using API',
-        html: `<h1>Verify your email </h1><a href=http://localhost:3000/verifyemail/${token}>click here<a/>`,
-      };
-  
-      const result = await transport.sendMail(mailOptions);
-      console.log("result", result)
-      res.send({"status":"sucess","message":"email has been send please check your email"})
- 
+       const result=await sendEmailTemp(user.email,token)
+       console.log("result", result)
+       res.send({"status":"sucess","message":"email has been send please check your email"})
       }
       else {
         res.send({"status":"failed","message":"Account not found"})
@@ -174,7 +139,7 @@ class UserController{
       res.send({"status":"failed","message":"error"})
     }
   };
-
+ //normal verifyEmail
   static verifyEmail = async (req, res) => {
     try {
       const data = {
@@ -207,7 +172,65 @@ class UserController{
       }) 
     }
   }
+
+
+  //checkout login with otp logic
+  static userLoginInCheckOut = async (req, res) => {
+    const { email, password} = req.body;
+    try {
+      const user = await UserModel.findOne({ email: email })
+      if (user)
+        if (user.password == password)
+        {
+          if (user.emailverified=="true")
+          {
+            const data = {
+              userID: user._id,
+              email: user.email,
+              fame: user.fame,
+            }
+             
+            const token = Jwt.sign(data,
+              process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
+            
+            var otp = Math.floor(1000 + Math.random() * 9000);
+
+            let update = await UserModel.updateOne({ _id: user._id }, { $set: { otp: otp } }) 
+            if (update.acknowledged)
+            {
+              const result = await sendEmailTemp(user.email, otp)
+              res.send({
+                "status": "success",
+                "message": "login successfully",
+                data,
+                token,
+                id:user._id
+              }) 
+            }
+            else {
+              res.send({"status":"failed","message":"database issue"})
+            }
+            
+          }
+          else {
+            res.send({"status":"success","message":"Verification Otp has been sent on your email"})
+          }
+        }
+        else {
+          res.send({"status":"failed","message":"invalid email/password"})
+        }
+       
+       else
+       {
+        res.send({"status":"failed","message":"invalid email/password"})
+       }
+    } catch (error) {
+      console.log(error)
+      res.send({"status":"failed","message":"invalid email/password"})
+    }
+
   
+  }
 
 }
 

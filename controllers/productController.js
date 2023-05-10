@@ -28,14 +28,15 @@ class ProductController {
     // add checkout
     static addCheckout = async (req, res) => { 
         try {
-            const { userId, ProductId } = req.query;
-            
-            const list = await CheckoutModel.find({ userid: userId,paid: false})
+            var { userId, ProductId } = req.query;
+            console.log("userId===>",userId)
+            const list = await CheckoutModel.find({ userid: userId, paid: false })
+            console.log("list1",list)
             if (list.length>0)
             {
                //login if product is already added or not
                const bascketData = await CheckoutModel.find({ userid: userId, lists: ProductId,paid: false}, { lists: 1 })
-               
+               console.log(bascketData)
                 if (bascketData.length > 0)
                 {
                     res.status(400).json({ message: 'Product already added'});       
@@ -57,20 +58,42 @@ class ProductController {
             }
     
             else {
-                const data = await CheckoutModel.insertMany({
-                    userid:userId,paid:false,list:[ProductId] 
-                })
-                
-                if (data.lenght > 0)
-                {
-                    res.status(200).json({ message: 'Product Added successfully'});  
+                try {
+                    console.log("ProductId", ProductId)
+                    
+                    const doc = new CheckoutModel({
+                        userid: userId,
+                        paid: false,
+                        list: [ProductId]
+                      });
+                      
+                      doc.save()
+                          .then(async (data)=> {
+                              
+                            const info = await CheckoutModel.updateOne(
+                                { userid: userId,paid: false},
+                                { $push: { lists: ProductId } }
+                              );
+                              if (info.acknowledged)
+                              {
+                                  res.status(200).json({ message: 'Product Added successfully' });    
+                              }
+                              else {
+                                res.status(400).json({ message: 'Something went wrong'});  
+                              }
+                        })
+                        .catch((error) => {
+                            console.log('Document saving failed:', error);
+                            res.status(400).json({ message: 'Something went wrong'}); 
+                        });
        
-                }
-                else {
-                    res.status(200).json({ message: 'Connot add product'});  
-                }
+                } catch (error) {
+                    console.log("error===>",error)
+                    res.status(400).json({ message: 'Something went wrong'});  
+                }  
             }   
         } catch (error) {
+            console.log(error)
             res.status(400).json({ message: 'Something went wrong'});  
         }
         
@@ -81,9 +104,8 @@ class ProductController {
 
      //delete checkout
      static removeCheckout = async (req, res) => { 
-
-        const { userId, ProductId } = req.query;
-        const list = await CheckoutModel.find({ userid: userId, paid: false })
+         const { userId, ProductId} = req.query;
+         const list = await CheckoutModel.find({ userid: userId, paid: false })
          
          
         if (list.length>0)
@@ -119,12 +141,10 @@ class ProductController {
     
     //get checkout list 
     static listCheckout = async (req, res) => { 
-
         try {
             const { userId } = req.query;
-           
+            console.log("userId====>",userId)
             const list = await CheckoutModel.find({ userid: userId, paid: false })
-             
             if (list.length > 0)
             {
     
@@ -142,7 +162,7 @@ class ProductController {
     
               
                 res.status(200).json({
-                    message: 'Product Removed successfully', data: {
+                    message: 'Product loaded successfully', data: {
                    data,Total,checkoutId:list[0]._id,ItemCount
               }});  
             }
@@ -158,7 +178,6 @@ class ProductController {
 
        
     }
-
 }
 
 export default ProductController;

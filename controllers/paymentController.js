@@ -5,7 +5,6 @@ import Razorpay from "razorpay";
 import CheckoutModel from "../model/Checkout.js"
 import Product from "../model/Product.js"
 class PaymentController {
-    
     //generate order
     static ordersData = async (req, res) => {
         try {
@@ -63,7 +62,7 @@ class PaymentController {
             console.log(req.body)
              
             const list = await CheckoutModel.find({ userid: id,paid: false})
-            
+            console.log(list)
             if (list.length > 0)
             {
                 const final = await CheckoutModel.updateOne({ _id: list[0]._id }, { $set: { paid: true }});

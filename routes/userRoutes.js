@@ -16,6 +16,6 @@ router.get("/verifyEmail", checkUserAuth, UserController.verifyEmail)
 //checkout login/register flow
 router.post("/loginInCheckOut", UserController.userLoginInCheckOut)
 // router.post("/RegisterInCheckOut", UserController.userLoginInCheckOut)
-// router.post("/VerifyEmailInCheckOut", UserController.userLoginInCheckOut)
+router.post("/VerifyEmailInCheckOut", UserController.verifyEmailWithOtp)
 	 
 export default router;

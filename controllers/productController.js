@@ -143,7 +143,7 @@ class ProductController {
     static listCheckout = async (req, res) => { 
         try {
             const { userId } = req.query;
-            console.log("userId====>",userId)
+            console.log("userId====>", userId)
             const list = await CheckoutModel.find({ userid: userId, paid: false })
             if (list.length > 0)
             {

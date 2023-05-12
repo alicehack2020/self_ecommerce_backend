@@ -178,7 +178,8 @@ class UserController{
 
   //checkout login with otp logic flow
   static userLoginInCheckOut = async (req, res) => {
-    const { email, password,ip} = req.body;
+    const { email, password, checkoutData } = req.body;
+    console.log("checkoutData",checkoutData)
     try {
       const user = await UserModel.findOne({ email: email })
       if (user) {
@@ -189,18 +190,56 @@ class UserController{
           lname: user.lname,
           mobile: user.mobile,
         }
-        var token = Jwt.sign(data,
+          var token = Jwt.sign(data,
           process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
        
         if (user.password == password) {
           if (user.emailverified == "true") {
-            
-            const list = await CheckoutModel.find({ userid: ip, paid: false })
-           
-            if (list.length > 0) {
-              //updateting user id with temp checkout products
-              let updateUserId = await UserModel.updateOne({ userid: ip }, { $set: { userid: user._id } })
-              if (updateUserId.acknowledged) {
+            const list = await CheckoutModel.findOne({ userid: user._id,paid: false  })
+            console.log("list---------",list)
+            if (list==null || list==undefined) {
+              const productIds = checkoutData.map(product => product._id) 
+              //cookies to db logic here
+              const doc = new CheckoutModel({
+                userid: user._id,
+                paid: false,
+                list: []
+              });
+              doc.save()
+                  .then(async (data)=> {
+                    const info = await CheckoutModel.updateOne(
+                      { userid: user._id, paid: false },
+                      { $push: { lists: { $each: productIds } } }
+                    );
+                    
+                    if (info.acknowledged)
+                    {
+                      
+                      res.send({
+                        "status": "success",
+                        "message": "login successfully",
+                        data,
+                        verified:true,
+                        token,
+                        id: user._id
+                      })   
+      
+                    }   
+                })
+                .catch((error) => {
+                    res.status(400).json({ message: 'Something went wrong'}); 
+                });
+            }
+            else {
+              const productIds = checkoutData.map(product => product._id)
+              const info = await CheckoutModel.updateOne(
+                { userid: user._id, paid: false },
+                { $push: { lists: { $each: productIds } } }
+              );
+              
+              if (info.acknowledged)
+              {
+                
                 res.send({
                   "status": "success",
                   "message": "login successfully",
@@ -208,12 +247,9 @@ class UserController{
                   verified:true,
                   token,
                   id: user._id
-                })
-              }
-            }
-            else {
-               //some db issue
-               res.send({"status":"failed","message":"something went wrong"})
+                })   
+
+              } 
             }
             
           }
@@ -238,67 +274,89 @@ class UserController{
       console.log(error)
       res.send({"status":"failed","message":"invalid email/password"})
     }
-
-  
   }
 
   static verifyEmailWithOtp = async (req, res) => {
     try {
-     
-      const { email, pin, ip } = req.body;
-   
-      if (email && pin && ip) 
+      const { email, pin,checkoutData} = req.body;
+      if (email && pin) 
       {
-        let userData = await UserModel.findOne({ email: email })
-       
-        if (Object.keys(userData).length !== 0)
+        let user = await UserModel.findOne({ email: email })
+        if (Object.keys(user).length !== 0)
         {
-          if (userData.otp == pin)
+          if (user.otp == pin)
           {
            
-            const query = { email: email };
+            const query = { email: user.email };
             const update = { $set: { emailverified: true } };
             const result = await UserModel.updateOne(query, update);
            
             if (result.acknowledged)
             {
               
-              const user = await UserModel.findOne({ email: email })
-             
-              const data = {
-                userID: user._id,
-                email: user.email,
-                fame: user.fname,
-                lname: user.lname,
-                mobile: user.mobile,
-              }
-              const token=Jwt.sign(data,
-                process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
-              // console.log("data=====>",data)
-              // console.log("user._id", user._id)
-              console.log("ip----->",ip)
-              let checkoutDataCheck = await CheckoutModel.findOne({ userid: ip })
-               console.log("checkoutDataCheck",checkoutDataCheck)
-              // console.log("user._id----->",user._id)
-
-              let updateUserId = await CheckoutModel.updateOne({ _id: checkoutDataCheck._id }, { $set: { userid: data.userID } })
-              console.log("updateUserId",updateUserId)
-              if (updateUserId.acknowledged)
-              {
-                res.send({
-                  "status": "success",
-                  "message": "email has been verified successfully",
-                  data,
-                  token,
-                  id: user._id
-                })
+              const list = await CheckoutModel.findOne({ userid: user._id, })
+              if (list.length < 0) {
+                const productIds = checkoutData.map(product => product._id) 
+                //cookies to db logic here
+                const doc = new CheckoutModel({
+                  userid: user._id,
+                  paid: false,
+                  list: []
+                });
+                doc.save()
+                    .then(async (data)=> {
+                      const info = await CheckoutModel.updateOne(
+                        { userid: user._id, paid: false },
+                        { $push: { lists: { $each: productIds } } }
+                      );
+                      
+                      if (info.acknowledged)
+                      {
+                        
+                        res.send({
+                          "status": "success",
+                          "message": "email has been verified successfully",
+                          data,
+                          verified:true,
+                          token,
+                          id: user._id
+                        })   
+        
+                      }   
+                  })
+                  .catch((error) => {
+                      res.status(400).json({ message: 'Something went wrong'}); 
+                  });
               }
               else {
-                res.status(400).send({
-                  "status": "fail",
-                  "message": "Please Contact Team",
-                })  
+                const productIds = checkoutData.map(product => product._id)
+                const info = await CheckoutModel.updateOne(
+                  { userid: user._id, paid: false },
+                  { $push: { lists: { $each: productIds } } }
+                );
+                
+                if (info.acknowledged)
+                {
+                  
+                  res.send({
+                    "status": "success",
+                    "message": "email has been verified successfully",
+                    data,
+                    verified:true,
+                    token,
+                    id: user._id
+                  })   
+  
+                }
+                else {
+                  res.status(400).send({
+                    "status": "fail",
+                    "message": "Please Contact Team",
+                  })  
+                }
               }
+            
+             
             }
           } else {
             res.status(400).send({
@@ -317,7 +375,7 @@ class UserController{
       console.log(error)
       res.status(400).send({
         "status": "fail",
-        "message": "Invalid token please re-verify email",
+        "message": "please contact team",
       }) 
     }
   }

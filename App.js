@@ -8,6 +8,7 @@ import dotenv from "dotenv"
  
 import bodyParser from "body-parser";
 import connectDb from "./config/connectdb.js"
+import cookieParser from "cookie-parser";
 
 dotenv.config()
 
@@ -16,8 +17,10 @@ const database_url=process.env.DATABASE_URL;
 
 
 connectDb(database_url)
+app.use(cookieParser());
  app.use(bodyParser.json())
-  
+ 
+
  
  
   

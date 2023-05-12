@@ -9,9 +9,8 @@ class PaymentController {
     
     static ordersData = async (req, res) => {
         try {
-            const { checkoutId } = req.body;
-            
-            const list = await CheckoutModel.find({ _id: checkoutId })
+            const userId  = req.user._id;
+            const list = await CheckoutModel.findOne({ userid: userId,paid: false})
             if (list.length > 0)
             {
                  
@@ -58,15 +57,13 @@ class PaymentController {
 
     static verifyData = async (req, res) => {
         try {
-            const { razorpay_order_id, razorpay_payment_id, razorpay_signature,id} =
-                req.body;
-            console.log(req.body)
-             
-            const list = await CheckoutModel.find({ userid: id,paid: false})
-            console.log(list)
+            const userId  = req.user._id;
+            const { razorpay_order_id, razorpay_payment_id, razorpay_signature} =req.body;
+         
+            const list = await CheckoutModel.findOne({ userid: userId,paid: false})
             if (list.length > 0)
             {
-                const final = await CheckoutModel.updateOne({ _id: list[0]._id }, { $set: { paid: true }});
+                const final = await CheckoutModel.updateOne({ userid: list._id }, { $set: { paid: true }});
                  
                 if (final.acknowledged)
                 {

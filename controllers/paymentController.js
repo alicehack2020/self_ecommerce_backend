@@ -6,6 +6,7 @@ import CheckoutModel from "../model/Checkout.js"
 import Product from "../model/Product.js"
 class PaymentController {
     //generate order
+    
     static ordersData = async (req, res) => {
         try {
             const { checkoutId } = req.body;

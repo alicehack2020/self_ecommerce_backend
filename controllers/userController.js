@@ -176,7 +176,7 @@ class UserController{
   }
 
 
-  //checkout login with otp logic
+  //checkout login with otp logic flow
   static userLoginInCheckOut = async (req, res) => {
     const { email, password,ip} = req.body;
     try {
